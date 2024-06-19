@@ -1,0 +1,10 @@
+base64 taken from:
+https://forelink.top/index.php/2024/05/06/dilemma/
+
+links:
+https://cryptii.com/pipes/base64-to-binary
+https://www.rapidtables.com/convert/number/binary-to-ascii.html
+
+run via:
+bundle install
+ruby main.rb
