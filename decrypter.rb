@@ -8,21 +8,23 @@ class Decrypter
   end
 
   def decrypt!
-    return unless @cipher.include? "aes-256-cfb"
+    return unless @cipher.match? /aes-\d\d\d-cfb/
     lefts, rights = load_data
 
-    lefts.each_with_index do |left, i|
-      File.open("tmp.enc", "w") { |f| f.write(rights[i] + "\n") }
-      cmd = "openssl #{@cipher} -nopad -d -a -in tmp.enc -a -k #{Utils::KEY} -iv #{left} -pbkdf2"
-      puts "cmd: #{cmd}"
-      result = `#{cmd}`
-      unless ["bad decrypt", "error"].any? { |err| result.downcase.include? err }
-        puts "#{i}: \"#{result.ord}\"" rescue "#{i}: \"#{result}\""
+    lefts.each do |left|
+      rights.each do |r|
+        File.open("tmp.enc", "w") { |f| f.write(r + "\n") }
+        cmd = "openssl #{@cipher} -nopad -d -a -in tmp.enc -a -k #{Utils::KEY} -iv #{left} -pbkdf2"
+        puts "#{cmd}"
+        result = `#{cmd}`
+        result = result.downcase rescue result
+        unless ["bad decrypt", "error"].any? { |err| result.include? err }
+          puts "\"#{result.ord}\"" rescue "\"#{result}\""
+        end
       end
     end
   rescue => e
     puts "Cannot decrypt dir #{@dir} with cipher #{@cipher} due to #{e.message}"
-    byebug
   ensure
     File.delete "tmp.enc" rescue nil
   end
